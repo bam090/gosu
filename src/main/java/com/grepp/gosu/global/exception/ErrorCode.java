@@ -31,20 +31,29 @@ public enum ErrorCode {
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다."),
     DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다."),
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 리프레시 토큰입니다."),
+    LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다."),
+    PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "현재 비밀번호가 올바르지 않습니다."),
 
     // ② 기준 데이터
 
+
     // ③ 고수
+
 
     // ④ 커뮤니티
 
+
     // ⑤ 견적 요청·매칭
+
 
     // ⑥ 리뷰·찜·좋아요
 
+
     // ⑦ 크레딧·결제
 
+
     // ⑧ 채팅
+
 
     ;
 

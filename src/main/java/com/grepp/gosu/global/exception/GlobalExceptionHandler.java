@@ -7,6 +7,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -64,6 +66,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException() {
         return toResponse(ErrorCode.INVALID_TYPE);
+    }
+
+    // [스프링] 401 컨트롤러·서비스에서 인증에 실패함
+    // 스프링 시큐리티의 인증 예외를 공통 인증 실패 응답으로 바꾼다
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationException() {
+        return toResponse(ErrorCode.UNAUTHORIZED);
+    }
+
+    // [스프링] 403 인증된 사용자가 필요한 권한을 갖고 있지 않음
+    // 컨트롤러·서비스에서 발생한 권한 예외를 공통 접근 거부 응답으로 바꾼다
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException() {
+        return toResponse(ErrorCode.FORBIDDEN);
     }
 
     // [스프링] 404 없는 경로
