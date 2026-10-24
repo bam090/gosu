@@ -2,8 +2,10 @@ package com.grepp.gosu.global.config;
 
 import com.grepp.gosu.global.security.CustomAccessDeniedHandler;
 import com.grepp.gosu.global.security.CustomAuthenticationEntryPoint;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -12,6 +14,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -38,6 +45,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
+                // 추가: 아래 CORS 설정 빈을 시큐리티에 연결한다
+                .cors(Customizer.withDefaults())
                 // JWT를 헤더로 보내는 REST API라서 CSRF 보호를 끈다
                 .csrf(AbstractHttpConfigurer::disable)
                 // H2 콘솔 화면이 iframe으로 열리도록 같은 출처의 프레임을 허용한다
@@ -53,7 +62,28 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // 회원가입할 때 비밀번호를 암호화하고, 로그인할 때 비교하는 데 쓴다
+    // 추가: 허용할 프론트 주소와 요청 조건을 설정한다
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(
+            @Value("${app.frontend-url}") String frontendUrl
+    ) {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of(frontendUrl));
+        configuration.setAllowedMethods(
+                List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS")
+        );
+        configuration.setAllowedHeaders(List.of("*"));
+        // Refresh 토큰 쿠키를 포함한 요청을 허용한다
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/**", configuration);
+        // 웹소켓 관련 HTTP 요청에도 적용한다
+        source.registerCorsConfiguration("/ws/**", configuration);
+        return source;
+    }
+
+    // 회원가입할 때 비밀번호를 암호화하고 로그인할 때 비교하는데 쓴다
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
