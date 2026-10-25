@@ -20,11 +20,11 @@ public class MemberService {
 
     @Transactional
     public Member create(MemberCreateRequest memberCreateRequest) {
+
         // 중복된 이메일과 닉네임은 가입을 거절한다.
         if (memberRepository.existsByEmail(memberCreateRequest.getEmail())) {
             throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
         }
-
         if (memberRepository.existsByNickname(memberCreateRequest.getNickname())) {
             throw new BusinessException(ErrorCode.DUPLICATE_NICKNAME);
         }
@@ -33,8 +33,8 @@ public class MemberService {
 
         // 비밀번호는 해시로 저장하고 가입 권한은 서버에서 정한다.
         member.setPassword(passwordEncoder.encode(memberCreateRequest.getPassword()));
+        // 가입 시 일반 사용자 권한을 준다.
         member.setRole(MemberRole.CUSTOMER);
-
         return memberRepository.save(member);
     }
 }
