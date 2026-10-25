@@ -1,7 +1,7 @@
 package com.grepp.gosu.domain.user.auth;
 
 import com.grepp.gosu.domain.user.auth.dto.LoginRequest;
-import com.grepp.gosu.domain.user.auth.dto.LoginResponse;
+import com.grepp.gosu.domain.user.auth.dto.LoginResult;
 import com.grepp.gosu.domain.user.member.Member;
 import com.grepp.gosu.domain.user.member.MemberMapper;
 import com.grepp.gosu.domain.user.member.MemberService;
@@ -11,7 +11,6 @@ import com.grepp.gosu.global.exception.BusinessException;
 import com.grepp.gosu.global.exception.ErrorCode;
 import com.grepp.gosu.global.security.CustomUserDetails;
 import com.grepp.gosu.global.security.JwtProvider;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
+    private final RefreshTokenService refreshTokenService;
 
     private final MemberService memberService;
     private final MemberMapper memberMapper;
@@ -38,7 +38,8 @@ public class AuthService {
         return memberMapper.toResponse(member);
     }
 
-    public LoginResponse login(@Valid LoginRequest loginRequest) {
+    @Transactional
+    public LoginResult login(LoginRequest loginRequest) {
 
         Authentication authentication;
 
@@ -53,6 +54,7 @@ public class AuthService {
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         String accessToken = jwtProvider.createToken(userDetails);
-        return new LoginResponse(accessToken, "Bearer");
+        String refreshToken = refreshTokenService.issued(userDetails.getMemberId());
+        return new LoginResult(accessToken, refreshToken);
     }
 }
