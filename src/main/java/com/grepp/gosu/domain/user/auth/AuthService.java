@@ -2,6 +2,7 @@ package com.grepp.gosu.domain.user.auth;
 
 import com.grepp.gosu.domain.user.auth.dto.LoginRequest;
 import com.grepp.gosu.domain.user.auth.dto.LoginResult;
+import com.grepp.gosu.domain.user.auth.dto.RefreshResult;
 import com.grepp.gosu.domain.user.member.Member;
 import com.grepp.gosu.domain.user.member.MemberMapper;
 import com.grepp.gosu.domain.user.member.MemberService;
@@ -56,5 +57,17 @@ public class AuthService {
         String accessToken = jwtProvider.createToken(userDetails);
         String refreshToken = refreshTokenService.issued(userDetails.getMemberId());
         return new LoginResult(accessToken, refreshToken);
+    }
+
+    @Transactional
+    public LoginResult refresh(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        RefreshResult refreshResult = refreshTokenService.refresh(refreshToken);
+
+        String accessToken = jwtProvider.createToken(refreshResult.userDetails());
+        return new LoginResult(accessToken, refreshResult.refreshToken());
     }
 }

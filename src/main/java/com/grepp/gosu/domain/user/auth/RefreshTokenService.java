@@ -1,7 +1,11 @@
 package com.grepp.gosu.domain.user.auth;
 
+import com.grepp.gosu.domain.user.auth.dto.RefreshResult;
 import com.grepp.gosu.domain.user.member.Member;
 import com.grepp.gosu.domain.user.member.MemberRepository;
+import com.grepp.gosu.global.exception.BusinessException;
+import com.grepp.gosu.global.exception.ErrorCode;
+import com.grepp.gosu.global.security.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,5 +48,30 @@ public class RefreshTokenService {
 
         refreshTokenRepository.save(refreshToken);
         return refreshToken.getToken();
+    }
+
+    @Transactional
+    public RefreshResult refresh(String token) {
+        RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
+                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN));
+
+        LocalDateTime now = LocalDateTime.now();
+        if (!refreshToken.getExpiredAt().isAfter(now)) {
+            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        Member member = refreshToken.getMember();
+        if (member.getDeletedAt() != null) {
+            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        // 같은 토큰이 동시에 사용돼도 삭제에 성공한 요청만 재발급한다.
+        if (refreshTokenRepository.deleteByToken(token) != 1) {
+            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        CustomUserDetails userDetails = new CustomUserDetails(member);
+        String newRefreshToken = issued(member.getId());
+        return new RefreshResult(userDetails, newRefreshToken);
     }
 }

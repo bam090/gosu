@@ -14,10 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "회원·인증", description = "회원가입과 이메일 로그인 API")
 @RestController
@@ -47,9 +44,21 @@ public class AuthController {
         LoginResult loginResult = authService.login(loginRequest);
         LoginResponse loginResponse = new LoginResponse(loginResult.accessToken(), "Bearer");
         return ResponseEntity.ok()
-                .header(
-                        HttpHeaders.SET_COOKIE,
-                        refreshTokenCookie.create(loginResult.refreshToken()).toString())
+                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.create(loginResult.refreshToken()).toString())
+                .body(loginResponse);
+    }
+
+    @SecurityRequirements
+    @Operation(summary = "토큰 재발급")
+    @PostMapping("/public/auth/refresh")
+    public ResponseEntity<LoginResponse> refresh(
+            @CookieValue(value = RefreshTokenCookie.NAME, required = false) String refreshToken
+    ) {
+        LoginResult loginResult = authService.refresh(refreshToken);
+
+        LoginResponse loginResponse = new LoginResponse(loginResult.accessToken(), "Bearer");
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.create(loginResult.refreshToken()).toString())
                 .body(loginResponse);
     }
 }
