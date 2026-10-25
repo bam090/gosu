@@ -39,6 +39,13 @@ public enum ErrorCode {
     RESERVED_MEMBER_VALUE(HttpStatus.BAD_REQUEST, "탈퇴 회원용 이메일이나 닉네임은 사용할 수 없습니다."),
 
     // ② 기준 데이터
+    CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "카테고리를 찾을 수 없습니다."),
+    DUPLICATE_CATEGORY(HttpStatus.CONFLICT, "같은 상위 항목에 이미 사용 중인 카테고리 이름입니다."),
+    CATEGORY_HAS_CHILDREN(HttpStatus.CONFLICT, "하위 카테고리가 있어 처리할 수 없습니다."),
+    REGION_NOT_FOUND(HttpStatus.NOT_FOUND, "지역을 찾을 수 없습니다."),
+    DUPLICATE_REGION(HttpStatus.CONFLICT, "같은 상위 항목에 이미 사용 중인 지역 이름입니다."),
+    DUPLICATE_REGION_CODE(HttpStatus.CONFLICT, "이미 사용 중인 지역 코드입니다."),
+    REGION_HAS_CHILDREN(HttpStatus.CONFLICT, "하위 지역이 있어 처리할 수 없습니다."),
 
 
     // ③ 고수
