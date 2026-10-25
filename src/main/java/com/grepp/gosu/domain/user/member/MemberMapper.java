@@ -2,6 +2,7 @@ package com.grepp.gosu.domain.user.member;
 
 import com.grepp.gosu.domain.user.member.dto.MemberCreateRequest;
 import com.grepp.gosu.domain.user.member.dto.MemberResponse;
+import com.grepp.gosu.domain.user.member.dto.MemberPublicResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -17,4 +18,6 @@ public interface MemberMapper {
     Member toEntity(MemberCreateRequest memberCreateRequest);
 
     MemberResponse toResponse(Member member);
+
+    MemberPublicResponse toPublicResponse(Member member);
 }

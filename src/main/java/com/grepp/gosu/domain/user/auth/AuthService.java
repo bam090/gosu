@@ -37,6 +37,8 @@ public class AuthService {
     private final MemberRepository memberRepository;
     private final RefreshTokenRepository refreshTokenRepository;
 
+    // TODO: 비밀번호를 잊은 회원을 위해 본인 확인 후 비밀번호를 재설정하는 API를 추가합니다.
+
     // 일반 사용자 회원가입
     @Transactional
     public MemberResponse signup(MemberCreateRequest memberCreateRequest) {
@@ -51,15 +53,16 @@ public class AuthService {
         Authentication authentication;
 
         try {
-            // 회원 조회와 비밀번호 비교를 시큐리티에 맡긴다.
             authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         } catch (AuthenticationException e) {
-            // 이메일 없음과 비밀번호 불일치를 같은 응답으로 처리한다.
             throw new BusinessException(ErrorCode.LOGIN_FAILED);
         }
 
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        if (!(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
+            throw new BusinessException(ErrorCode.LOGIN_FAILED);
+        }
+
         String accessToken = jwtProvider.createToken(userDetails);
         String refreshToken = refreshTokenService.issued(userDetails.getMemberId());
         return new LoginResult(accessToken, refreshToken);

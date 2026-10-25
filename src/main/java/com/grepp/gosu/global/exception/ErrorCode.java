@@ -34,6 +34,10 @@ public enum ErrorCode {
     LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다."),
     PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "현재 비밀번호가 올바르지 않습니다."),
 
+    DUPLICATE_PHONE(HttpStatus.CONFLICT, "이미 사용 중인 전화번호입니다."),
+    SELF_ROLE_CHANGE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "본인의 관리자 권한은 변경할 수 없습니다."),
+    RESERVED_MEMBER_VALUE(HttpStatus.BAD_REQUEST, "탈퇴 회원용 이메일이나 닉네임은 사용할 수 없습니다."),
+
     // ② 기준 데이터
 
 
