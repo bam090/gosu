@@ -1,10 +1,13 @@
 package com.grepp.gosu.global.config;
 
-import com.grepp.gosu.global.security.CustomAccessDeniedHandler;
-import com.grepp.gosu.global.security.CustomAuthenticationEntryPoint;
+import com.grepp.gosu.domain.user.member.MemberRepository;
+import com.grepp.gosu.global.security.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -14,6 +17,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -36,56 +40,56 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             CustomAuthenticationEntryPoint authenticationEntryPoint,
-            CustomAccessDeniedHandler accessDeniedHandler
-    ) throws Exception {
+            CustomAccessDeniedHandler accessDeniedHandler,
+            JwtProvider jwtProvider,
+            MemberRepository memberRepository) throws Exception {
         http
-                // URL 권한 규칙: 위에서부터 순서대로 검사하고, 처음 일치한 규칙을 적용한다
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_URLS).permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
-                // 추가: 아래 CORS 설정 빈을 시큐리티에 연결한다
                 .cors(Customizer.withDefaults())
-                // JWT를 헤더로 보내는 REST API라서 CSRF 보호를 끈다
                 .csrf(AbstractHttpConfigurer::disable)
-                // H2 콘솔 화면이 iframe으로 열리도록 같은 출처의 프레임을 허용한다
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
-                // 세션을 만들지 않는다 (요청마다 토큰으로 인증한다)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // 401, 403 응답을 ErrorResponse 형식으로 통일한다
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(authenticationEntryPoint)
-                        .accessDeniedHandler(accessDeniedHandler)
+                        .accessDeniedHandler(accessDeniedHandler))
+                .addFilterBefore(
+                        new JwtAuthenticationFilter(jwtProvider, memberRepository),
+                        UsernamePasswordAuthenticationFilter.class
                 );
 
         return http.build();
     }
 
-    // 추가: 허용할 프론트 주소와 요청 조건을 설정한다
     @Bean
-    public CorsConfigurationSource corsConfigurationSource(
-            @Value("${app.frontend-url}") String frontendUrl
-    ) {
+    public CorsConfigurationSource corsConfigurationSource(@Value("${app.frontend-url}") String frontendUrl) {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(frontendUrl));
-        configuration.setAllowedMethods(
-                List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS")
-        );
+        configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        // Refresh 토큰 쿠키를 포함한 요청을 허용한다
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configuration);
-        // 웹소켓 관련 HTTP 요청에도 적용한다
         source.registerCorsConfiguration("/ws/**", configuration);
         return source;
     }
 
-    // 회원가입할 때 비밀번호를 암호화하고 로그인할 때 비교하는데 쓴다
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(
+            CustomUserDetailsService customUserDetailsService,
+            PasswordEncoder passwordEncoder
+    ) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(customUserDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
+        return new ProviderManager(provider);
     }
 }
