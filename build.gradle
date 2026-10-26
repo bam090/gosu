@@ -6,7 +6,7 @@ plugins {
 
 group = 'com.grepp'
 version = '0.0.1-SNAPSHOT'
-description = 'gosu'
+description = 'efy'
 
 java {
     toolchain {
