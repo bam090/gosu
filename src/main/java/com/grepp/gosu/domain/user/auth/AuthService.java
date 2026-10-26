@@ -56,11 +56,11 @@ public class AuthService {
             authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         } catch (AuthenticationException e) {
-            throw new BusinessException(ErrorCode.LOGIN_FAILED);
+            throw new BusinessException(ErrorCode.LOGIN_FAILED_EXCEPTION);
         }
 
         if (!(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
-            throw new BusinessException(ErrorCode.LOGIN_FAILED);
+            throw new BusinessException(ErrorCode.LOGIN_FAILED_EXCEPTION);
         }
 
         String accessToken = jwtProvider.createToken(userDetails);
@@ -71,7 +71,7 @@ public class AuthService {
     @Transactional
     public LoginResult refresh(String refreshToken) {
         if (refreshToken == null || refreshToken.isBlank()) {
-            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
+            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN_EXCEPTION);
         }
 
         RefreshResult refreshResult = refreshTokenService.refresh(refreshToken);
@@ -83,7 +83,7 @@ public class AuthService {
     @Transactional
     public void logout(Long memberId) {
         Member member = memberRepository.findByIdAndDeletedAtIsNull(memberId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND_EXCEPTION));
 
         refreshTokenRepository.deleteByMemberId(memberId);
 

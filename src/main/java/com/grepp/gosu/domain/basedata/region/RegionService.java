@@ -41,12 +41,12 @@ public class RegionService {
     public RegionResponse updateRegion(Long id, RegionRequest request) {
         Region entity = getRegionEntity(id);
         if (Objects.equals(id, request.getParentId())) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT);
+            throw new BusinessException(ErrorCode.INVALID_INPUT_EXCEPTION);
         }
 
         Region parent = getParent(request.getParentId());
         if (parent != null && regionRepository.existsByParentId(id)) {
-            throw new BusinessException(ErrorCode.REGION_HAS_CHILDREN);
+            throw new BusinessException(ErrorCode.REGION_HAS_CHILDREN_EXCEPTION);
         }
         checkDuplicate(request, id);
 
@@ -60,7 +60,7 @@ public class RegionService {
     public RegionResponse deleteRegion(Long id) {
         Region entity = getRegionEntity(id);
         if (regionRepository.existsByParentId(id)) {
-            throw new BusinessException(ErrorCode.REGION_HAS_CHILDREN);
+            throw new BusinessException(ErrorCode.REGION_HAS_CHILDREN_EXCEPTION);
         }
 
         RegionResponse response = regionMapper.toResponse(entity);
@@ -70,7 +70,7 @@ public class RegionService {
 
     public Region getRegionEntity(Long id) {
         return regionRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.REGION_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.REGION_NOT_FOUND_EXCEPTION));
     }
 
     private Region getParent(Long parentId) {
@@ -80,7 +80,7 @@ public class RegionService {
 
         Region parent = getRegionEntity(parentId);
         if (parent.getParent() != null) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT);
+            throw new BusinessException(ErrorCode.INVALID_INPUT_EXCEPTION);
         }
         return parent;
     }
@@ -89,10 +89,10 @@ public class RegionService {
         boolean duplicate = request.getParentId() == null
                 ? regionRepository.existsByNameIgnoreCaseAndParentIsNullAndIdNot(request.getName(), id)
                 : regionRepository.existsByNameIgnoreCaseAndParentIdAndIdNot(request.getName(), request.getParentId(), id);
-        if (duplicate) throw new BusinessException(ErrorCode.DUPLICATE_REGION);
+        if (duplicate) throw new BusinessException(ErrorCode.DUPLICATE_REGION_EXCEPTION);
 
         if (regionRepository.existsByCodeAndIdNot(request.getCode(), id)) {
-            throw new BusinessException(ErrorCode.DUPLICATE_REGION_CODE);
+            throw new BusinessException(ErrorCode.DUPLICATE_REGION_CODE_EXCEPTION);
         }
     }
 }

@@ -40,12 +40,12 @@ public class CategoryService {
     public CategoryResponse updateCategory(Long id, CategoryRequest request) {
         Category entity = getCategoryEntity(id);
         if (Objects.equals(id, request.getParentId())) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT);
+            throw new BusinessException(ErrorCode.INVALID_INPUT_EXCEPTION);
         }
 
         Category parent = getParent(request.getParentId());
         if (parent != null && categoryRepository.existsByParentId(id)) {
-            throw new BusinessException(ErrorCode.CATEGORY_HAS_CHILDREN);
+            throw new BusinessException(ErrorCode.CATEGORY_HAS_CHILDREN_EXCEPTION);
         }
         checkDuplicate(request, id);
 
@@ -58,7 +58,7 @@ public class CategoryService {
     public CategoryResponse deleteCategory(Long id) {
         Category entity = getCategoryEntity(id);
         if (categoryRepository.existsByParentId(id)) {
-            throw new BusinessException(ErrorCode.CATEGORY_HAS_CHILDREN);
+            throw new BusinessException(ErrorCode.CATEGORY_HAS_CHILDREN_EXCEPTION);
         }
 
         CategoryResponse response = categoryMapper.toResponse(entity);
@@ -68,7 +68,7 @@ public class CategoryService {
 
     public Category getCategoryEntity(Long id) {
         return categoryRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND_EXCEPTION));
     }
 
     private Category getParent(Long parentId) {
@@ -78,7 +78,7 @@ public class CategoryService {
 
         Category parent = getCategoryEntity(parentId);
         if (parent.getParent() != null) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT);
+            throw new BusinessException(ErrorCode.INVALID_INPUT_EXCEPTION);
         }
         return parent;
     }
@@ -88,7 +88,7 @@ public class CategoryService {
                 ? categoryRepository.existsByNameIgnoreCaseAndParentIsNullAndIdNot(request.getName(), id)
                 : categoryRepository.existsByNameIgnoreCaseAndParentIdAndIdNot(request.getName(), request.getParentId(), id);
         if (duplicate) {
-            throw new BusinessException(ErrorCode.DUPLICATE_CATEGORY);
+            throw new BusinessException(ErrorCode.DUPLICATE_CATEGORY_EXCEPTION);
         }
     }
 }

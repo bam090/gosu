@@ -33,15 +33,15 @@ public class MemberService {
 
         ensureNotReserved(memberCreateRequest.getEmail(), memberCreateRequest.getNickname());
         if (memberRepository.existsByPhone(memberCreateRequest.getPhone())) {
-            throw new BusinessException(ErrorCode.DUPLICATE_PHONE);
+            throw new BusinessException(ErrorCode.DUPLICATE_PHONE_EXCEPTION);
         }
 
         // 중복된 이메일과 닉네임은 가입을 거절한다.
         if (memberRepository.existsByEmail(memberCreateRequest.getEmail())) {
-            throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
+            throw new BusinessException(ErrorCode.DUPLICATE_EMAIL_EXCEPTION);
         }
         if (memberRepository.existsByNickname(memberCreateRequest.getNickname())) {
-            throw new BusinessException(ErrorCode.DUPLICATE_NICKNAME);
+            throw new BusinessException(ErrorCode.DUPLICATE_NICKNAME_EXCEPTION);
         }
 
         Member member = memberMapper.toEntity(memberCreateRequest);
@@ -49,7 +49,7 @@ public class MemberService {
         // 비밀번호는 해시로 저장하고 가입 권한은 서버에서 정한다.
         member.setPassword(passwordEncoder.encode(memberCreateRequest.getPassword()));
         // 가입 시 일반 사용자 권한을 준다.
-        member.setRole(MemberRole.CUSTOMER);
+        member.setRole(MemberRole.USER);
         return memberRepository.save(member);
     }
 
@@ -76,13 +76,13 @@ public class MemberService {
         if (request.getNickname() != null) {
             ensureNotReserved(null, request.getNickname());
             if (memberRepository.existsByNicknameAndIdNot(request.getNickname(), memberId)) {
-                throw new BusinessException(ErrorCode.DUPLICATE_NICKNAME);
+                throw new BusinessException(ErrorCode.DUPLICATE_NICKNAME_EXCEPTION);
             }
             member.setNickname(request.getNickname());
         }
         if (request.getPhone() != null) {
             if (memberRepository.existsByPhoneAndIdNot(request.getPhone(), memberId)) {
-                throw new BusinessException(ErrorCode.DUPLICATE_PHONE);
+                throw new BusinessException(ErrorCode.DUPLICATE_PHONE_EXCEPTION);
             }
             member.setPhone(request.getPhone());
         }
@@ -92,12 +92,12 @@ public class MemberService {
         return memberMapper.toResponse(member);
     }
 
-    // TODO: 고수 프로필 등록 여부를 확인한 뒤 본인의 CUSTOMER ↔ EXPERT 전환을 연결
+    // TODO: 고수 프로필 등록 여부를 확인한 뒤 본인의 USER ↔ EXPERT 전환을 연결
     @Transactional
     public MemberResponse setRole(Long adminId, Long memberId, MemberRoleUpdateRequest request) {
         Member member = getMemberEntity(memberId);
         if (adminId.equals(memberId)) {
-            throw new BusinessException(ErrorCode.SELF_ROLE_CHANGE_NOT_ALLOWED);
+            throw new BusinessException(ErrorCode.SELF_ROLE_CHANGE_NOT_ALLOWED_EXCEPTION);
         }
 
         if (member.getRole() != request.getRole()) {
@@ -119,7 +119,7 @@ public class MemberService {
 
     public Member getMemberEntity(Long memberId) {
         return memberRepository.findByIdAndDeletedAtIsNull(memberId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND_EXCEPTION));
     }
 
     private void invalidateTokens(Member member) {
@@ -130,7 +130,7 @@ public class MemberService {
     private void ensureNotReserved(String email, String nickname) {
         if ((email != null && email.endsWith("@deleted.local"))
                 || (nickname != null && nickname.startsWith("탈퇴한회원_"))) {
-            throw new BusinessException(ErrorCode.RESERVED_MEMBER_VALUE);
+            throw new BusinessException(ErrorCode.RESERVED_MEMBER_VALUE_EXCEPTION);
         }
     }
 }

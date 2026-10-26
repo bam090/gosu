@@ -1,29 +1,27 @@
 package com.grepp.gosu.global.config;
 
-import io.swagger.v3.oas.models.Components;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
-import io.swagger.v3.oas.models.security.SecurityScheme;
-import org.springframework.context.annotation.Bean;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.context.annotation.Configuration;
 
-// Swagger의 JWT 인증 버튼을 설정한다. 실제 토큰 검증은 JWT 필터가 담당한다
 @Configuration
+@OpenAPIDefinition(
+        info = @Info(
+                title = "EFY API",
+                version = "v1",
+                description = "일상 서비스 매칭 플랫폼 REST API입니다."
+        ),
+        security = @SecurityRequirement(name = "accessToken")
+)
+@SecurityScheme(
+        name = "accessToken",
+        type = SecuritySchemeType.HTTP,
+        scheme = "bearer",
+        bearerFormat = "JWT",
+        description = "로그인 응답의 accessToken 값을 그대로 붙여 넣습니다."
+)
 public class SwaggerConfig {
-    // Authorize에 토큰만 입력하면 API 요청에 Bearer 인증 헤더가 붙는다
-    @Bean
-    public OpenAPI openAPI() {
-        return new OpenAPI()
-                .info(new Info()
-                        .title("gosu API")
-                        .version("초안"))
-                .components(new Components()
-                        .addSecuritySchemes("bearerAuth", new SecurityScheme()
-                                .type(SecurityScheme.Type.HTTP)
-                                .scheme("bearer")
-                                .bearerFormat("JWT")))
-                .addSecurityItem(new SecurityRequirement()
-                        .addList("bearerAuth"));
-    }
 }

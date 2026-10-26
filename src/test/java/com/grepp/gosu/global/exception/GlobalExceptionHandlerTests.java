@@ -76,19 +76,19 @@ class GlobalExceptionHandlerTests {
         // MemberService에서 회원이 없을 때
         @GetMapping("/members/{memberId}")
         public String getMember(@PathVariable Long memberId) {
-            throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND);
+            throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND_EXCEPTION);
         }
 
         // BookmarkService에서 같은 ErrorCode를 재사용할 때
         @PostMapping("/bookmarks/{memberId}")
         public String bookmark(@PathVariable Long memberId) {
-            throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND);
+            throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND_EXCEPTION);
         }
 
         // AuthService에서 리프레시 토큰이 잘못됐을 때
         @PostMapping("/refresh")
         public String refresh() {
-            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
+            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN_EXCEPTION);
         }
 
         @PostMapping("/signup")

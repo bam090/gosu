@@ -18,13 +18,13 @@ public final class PageableFactory {
     public static Pageable create(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder,
                                   List<String> sortableFields) {
         if (pageNumber < 1 || pageSize < 1) {
-            throw new BusinessException(ErrorCode.INVALID_PAGE_REQUEST);
+            throw new BusinessException(ErrorCode.INVALID_PAGE_REQUEST_EXCEPTION);
         }
         if (!sortableFields.contains(sortBy)) {
-            throw new BusinessException(ErrorCode.INVALID_PAGE_REQUEST);
+            throw new BusinessException(ErrorCode.INVALID_PAGE_REQUEST_EXCEPTION);
         }
         if (!sortOrder.equalsIgnoreCase("asc") && !sortOrder.equalsIgnoreCase("desc")) {
-            throw new BusinessException(ErrorCode.INVALID_PAGE_REQUEST);
+            throw new BusinessException(ErrorCode.INVALID_PAGE_REQUEST_EXCEPTION);
         }
 
         Sort.Direction direction = sortOrder.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;

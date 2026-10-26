@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
         ErrorCode code = e.getErrorCode();
 
         // 리프레시 토큰이 잘못되면 브라우저에 남은 쿠키도 지운다
-        if (code == ErrorCode.INVALID_REFRESH_TOKEN) {
+        if (code == ErrorCode.INVALID_REFRESH_TOKEN_EXCEPTION) {
             return ResponseEntity.status(code.getStatus())
                     .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.expire().toString())
                     .body(new ErrorResponse(code.getMessage()));
@@ -52,55 +52,55 @@ public class GlobalExceptionHandler {
         for (FieldError error : e.getBindingResult().getFieldErrors()) {
             errors.put(error.getField(), error.getDefaultMessage());
         }
-        return ResponseEntity.status(ErrorCode.INVALID_INPUT.getStatus())
-                .body(new ErrorResponse(ErrorCode.INVALID_INPUT.getMessage(), errors));
+        return ResponseEntity.status(ErrorCode.INVALID_INPUT_EXCEPTION.getStatus())
+                .body(new ErrorResponse(ErrorCode.INVALID_INPUT_EXCEPTION.getMessage(), errors));
     }
 
     // [스프링] 400 요청 본문이 없거나 JSON 형식이 잘못됨
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException() {
-        return toResponse(ErrorCode.INVALID_JSON);
+        return toResponse(ErrorCode.INVALID_JSON_EXCEPTION);
     }
 
     // [스프링] 400 경로 변수나 쿼리 파라미터의 타입이 맞지 않음
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException() {
-        return toResponse(ErrorCode.INVALID_TYPE);
+        return toResponse(ErrorCode.INVALID_TYPE_EXCEPTION);
     }
 
     // [스프링] 401 컨트롤러·서비스에서 인증에 실패함
     // 스프링 시큐리티의 인증 예외를 공통 인증 실패 응답으로 바꾼다
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponse> handleAuthenticationException() {
-        return toResponse(ErrorCode.UNAUTHORIZED);
+        return toResponse(ErrorCode.UNAUTHORIZED_EXCEPTION);
     }
 
     // [스프링] 403 인증된 사용자가 필요한 권한을 갖고 있지 않음
     // 컨트롤러·서비스에서 발생한 권한 예외를 공통 접근 거부 응답으로 바꾼다
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDeniedException() {
-        return toResponse(ErrorCode.FORBIDDEN);
+        return toResponse(ErrorCode.FORBIDDEN_EXCEPTION);
     }
 
     // [스프링] 404 없는 경로
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ErrorResponse> handleNoResourceFoundException() {
-        return toResponse(ErrorCode.PATH_NOT_FOUND);
+        return toResponse(ErrorCode.PATH_NOT_FOUND_EXCEPTION);
     }
 
     // [스프링] 405 주소는 있지만 그 HTTP 메서드를 받는 API가 없음
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErrorResponse> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
-        return ResponseEntity.status(ErrorCode.METHOD_NOT_ALLOWED.getStatus())
+        return ResponseEntity.status(ErrorCode.METHOD_NOT_ALLOWED_EXCEPTION.getStatus())
                 .headers(e.getHeaders())
-                .body(new ErrorResponse(ErrorCode.METHOD_NOT_ALLOWED.getMessage()));
+                .body(new ErrorResponse(ErrorCode.METHOD_NOT_ALLOWED_EXCEPTION.getMessage()));
     }
 
     // [스프링] 409 DB 유니크·외래 키 제약 위반
     // 같은 요청이 동시에 와서 서비스의 중복 검사를 둘 다 통과한 경우 등
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException() {
-        return toResponse(ErrorCode.DATA_CONFLICT);
+        return toResponse(ErrorCode.DATA_CONFLICT_EXCEPTION);
     }
 
     // [기타] 500 위에서 잡지 못한 예외
@@ -108,7 +108,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
         log.error("처리되지 않은 예외", e);
-        return toResponse(ErrorCode.INTERNAL_SERVER_ERROR);
+        return toResponse(ErrorCode.INTERNAL_SERVER_ERROR_EXCEPTION);
     }
 
     private ResponseEntity<ErrorResponse> toResponse(ErrorCode code) {

@@ -53,21 +53,21 @@ public class RefreshTokenService {
     @Transactional
     public RefreshResult refresh(String token) {
         RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
-                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN));
+                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN_EXCEPTION));
 
         LocalDateTime now = LocalDateTime.now();
         if (!refreshToken.getExpiredAt().isAfter(now)) {
-            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
+            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN_EXCEPTION);
         }
 
         Member member = refreshToken.getMember();
         if (member.getDeletedAt() != null) {
-            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
+            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN_EXCEPTION);
         }
 
         // 같은 토큰이 동시에 사용돼도 삭제에 성공한 요청만 재발급한다.
         if (refreshTokenRepository.deleteByToken(token) != 1) {
-            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
+            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN_EXCEPTION);
         }
 
         CustomUserDetails userDetails = new CustomUserDetails(member);

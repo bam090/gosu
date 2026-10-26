@@ -172,7 +172,7 @@ VALUES
 -- EXPERT 계정은 권한 테스트용이며 고수 프로필은 포함하지 않습니다.
 INSERT INTO member (email, password, nickname, phone, role, created_at)
 VALUES
-    ('customer1@example.com', '$2a$10$N8on.wPrFPr5oauwmXJQeeZoSnGoNxkC6q4I7eHMxNy88fcZdaO6C', '고객하나', '01012345678', 'CUSTOMER', CURRENT_TIMESTAMP),
+    ('customer1@example.com', '$2a$10$N8on.wPrFPr5oauwmXJQeeZoSnGoNxkC6q4I7eHMxNy88fcZdaO6C', '고객하나', '01012345678', 'USER', CURRENT_TIMESTAMP),
     ('expert1@example.com', '$2a$10$N8on.wPrFPr5oauwmXJQeeZoSnGoNxkC6q4I7eHMxNy88fcZdaO6C', '고수하나', '01023456789', 'EXPERT', CURRENT_TIMESTAMP),
     ('admin1@example.com', '$2a$10$N8on.wPrFPr5oauwmXJQeeZoSnGoNxkC6q4I7eHMxNy88fcZdaO6C', '관리자', '01034567890', 'ADMIN', CURRENT_TIMESTAMP);
 

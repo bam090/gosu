@@ -31,7 +31,7 @@ public class Member {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private MemberRole role; // CUSTOMER, EXPERT, ADMIN
+    private MemberRole role; // USER, EXPERT, ADMIN
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
